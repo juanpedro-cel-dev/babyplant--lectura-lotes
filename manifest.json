@@ -1,0 +1,16 @@
+{
+  "name": "Lectura de Lotes BabyPlant",
+  "short_name": "BabyPlant OCR",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#005a3c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icono-babyplant-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
