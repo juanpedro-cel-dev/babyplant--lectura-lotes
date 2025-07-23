@@ -286,4 +286,28 @@ function mostrarPreviewDual(videoFrameData) {
   ctxB.putImageData(binData, 0, 0);
 
   dualPreviewSection.style.display = 'block';
+  // 📲 Instalación manual de la app (PWA)
+  let deferredPrompt;
+  const btnInstalar = document.getElementById('btn-instalar');
+  const contenedorInstalar = document.getElementById('instalar-app');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    contenedorInstalar.style.display = 'block';
+  });
+
+  btnInstalar?.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        console.log('✅ App instalada');
+        contenedorInstalar.style.display = 'none';
+      } else {
+        console.log('❌ Instalación cancelada');
+      }
+      deferredPrompt = null;
+    }
+  });
 }

@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="icono-babyplant-512.png" />
     <meta name="theme-color" content="#005a3c" />
     <link rel="manifest" href="manifest.json" />
-</head>
+  </head>
 
   <body>
     <header>
@@ -74,6 +74,11 @@
         <button id="enviar">📤 Enviar a Google Sheets</button>
       </div>
     </main>
+    <div id="instalar-app" style="display: none; margin: 30px auto">
+      <button id="btn-instalar" style="background-color: #005a3c">
+        📲 Instalar aplicación
+      </button>
+    </div>
 
     <footer>
       App desarrollada por Juan Pedro Celdrán Danta — BabyPlant I+D · v1.0
@@ -81,13 +86,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
     <script src="script.js"></script>
-  
+
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(() => console.log("✅ Service Worker registrado"))
-          .catch((e) => console.error("❌ Error al registrar el SW", e));
+        navigator.serviceWorker
+          .register('service-worker.js')
+          .then(() => console.log('✅ Service Worker registrado'))
+          .catch((e) => console.error('❌ Error al registrar el SW', e));
       }
     </script>
-    </body>
+  </body>
 </html>
