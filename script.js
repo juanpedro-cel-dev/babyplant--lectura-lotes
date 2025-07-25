@@ -228,7 +228,7 @@ enviarBtn.addEventListener('click', () => {
   enviarBtn.textContent = 'Enviando...';
 
   fetch(
-    'https://script.google.com/macros/s/AKfycbygR4yyd2XVwHmJCp_BrUiQPm4a3_ao0zu-WQ43PMmuoETjQYnWjVpKTP3smgex3Zjv/exec' +
+    'https://script.google.com/macros/s/AKfycbygR4yyd2XVwHmJCp_BrUiQPm4a3_ao0zu-WQ43PMmuoETjQYnWjVpKTP3smgex3Zjv/exec?' +
       params
   )
     .then((response) => {
