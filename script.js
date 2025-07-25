@@ -41,6 +41,19 @@ navigator.mediaDevices
       });
   });
 
+// Función toast
+function mostrarToast(mensaje, tipo = 'ok') {
+  const toast = document.getElementById('toast');
+  toast.textContent = mensaje;
+  toast.className = 'toast mostrar' + (tipo === 'error' ? ' error' : '');
+
+  toast.classList.remove('oculto');
+  setTimeout(() => {
+    toast.classList.remove('mostrar');
+    setTimeout(() => toast.classList.add('oculto'), 400);
+  }, 3000);
+}
+
 // Capturar imagen y hacer OCR
 capturarBtn.addEventListener('click', () => {
   const ctx = canvas.getContext('2d');
@@ -197,7 +210,10 @@ enviarBtn.addEventListener('click', () => {
   const modulo = document.getElementById('select-modulo').value;
 
   if (!texto || !invernadero || !modulo) {
-    alert('❗ Debes capturar un texto y seleccionar invernadero y módulo');
+    mostrarToast(
+      '❗ Debes capturar un texto y seleccionar invernadero y módulo',
+      'error'
+    );
     return;
   }
 
@@ -219,16 +235,17 @@ enviarBtn.addEventListener('click', () => {
       enviarBtn.disabled = false;
       enviarBtn.textContent = 'Enviar';
       if (response.ok) {
-        alert('✅ Datos enviados correctamente');
+        mostrarToast('✅ Datos enviados correctamente');
         resultado.value = '';
       } else {
-        alert('❌ Error al enviar los datos');
+        mostrarToast('❌ Error al enviar los datos', 'error');
       }
     })
     .catch((err) => {
       enviarBtn.disabled = false;
       enviarBtn.textContent = 'Enviar';
       console.error('Error de conexión con Google Sheets:', err);
+      mostrarToast('❌ Error de conexión con Sheets', 'error');
     });
 });
 
