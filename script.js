@@ -36,7 +36,7 @@ navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => (video.srcObject = stream))
       .catch((err) => {
-        alert('No se pudo acceder a la cámara');
+        mostrarToast('❌ No se pudo acceder a la cámara', 'error');
         console.error(err);
       });
   });
