@@ -1,4 +1,3 @@
-
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open('babyplant-cache').then((cache) => {
@@ -8,7 +7,7 @@ self.addEventListener('install', (e) => {
         './style.css',
         './script.js',
         './icono-babyplant-512.png',
-        './Logotipo-Babyplant.png'
+        './Logotipo-Babyplant.png',
       ]);
     })
   );
