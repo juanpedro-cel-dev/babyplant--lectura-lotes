@@ -1,3 +1,5 @@
+// script.js
+
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const capturarBtn = document.getElementById('capturar');
@@ -5,7 +7,7 @@ const resultado = document.getElementById('resultado');
 const enviarBtn = document.getElementById('enviar');
 const editarBtn = document.getElementById('editar');
 
-// 🟢 Activar cámara trasera con zoom digital y reenfoque táctil
+// Activar cámara
 navigator.mediaDevices
   .getUserMedia({
     video: {
@@ -18,31 +20,28 @@ navigator.mediaDevices
   .then((stream) => {
     video.srcObject = stream;
 
-    // 👆 Reenfoque por click si la cámara lo soporta
     video.addEventListener('click', () => {
       const track = stream.getVideoTracks()[0];
       const capabilities = track.getCapabilities?.();
       if (capabilities?.focusMode?.includes('continuous')) {
         track
           .applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
-          .then(() => console.log('🔍 Autofocus reactivado'))
-          .catch((err) =>
-            console.warn('⚠️ No se pudo aplicar autofocus:', err)
-          );
+          .then(() => console.log('Autofocus reactivado'))
+          .catch((err) => console.warn('No se pudo aplicar autofocus:', err));
       }
     });
   })
-  .catch(() =>
+  .catch(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => (video.srcObject = stream))
       .catch((err) => {
-        alert('❌ No se pudo acceder a ninguna cámara');
+        alert('No se pudo acceder a la cámara');
         console.error(err);
-      })
-  );
+      });
+  });
 
-// 📸 Capturar imagen y hacer OCR con binarización
+// Capturar imagen y hacer OCR
 capturarBtn.addEventListener('click', () => {
   const ctx = canvas.getContext('2d');
   canvas.width = video.videoWidth;
@@ -51,6 +50,7 @@ capturarBtn.addEventListener('click', () => {
 
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   mostrarPreviewDual(imageData);
+
   const data = imageData.data;
   for (let i = 0; i < data.length; i += 4) {
     const avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
@@ -76,7 +76,7 @@ capturarBtn.addEventListener('click', () => {
     });
 });
 
-// ✏️ Edición manual
+// Edición manual
 editarBtn.addEventListener('click', () => {
   if (resultado.hasAttribute('readonly')) {
     resultado.removeAttribute('readonly');
@@ -88,7 +88,7 @@ editarBtn.addEventListener('click', () => {
   }
 });
 
-// 🧠 Extraer datos con limpieza avanzada
+// Extraer datos OCR
 function extraerDatosOCR(texto) {
   const limpiar = (str) =>
     str
@@ -152,8 +152,8 @@ function extraerDatosOCR(texto) {
     .filter((f) => /^\d{2}-\d{2}$/.test(f))
     .filter((f, i, arr) => arr.indexOf(f) === i)
     .sort((a, b) => {
-      const [d1, m1] = a.split('-').map(Number),
-        [d2, m2] = b.split('-').map(Number);
+      const [d1, m1] = a.split('-').map(Number);
+      const [d2, m2] = b.split('-').map(Number);
       return m1 !== m2 ? m1 - m2 : d1 - d2;
     });
 
@@ -187,25 +187,32 @@ function extraerDatosOCR(texto) {
   return { partida, lote, especie, variedad, fecha_siembra, fecha_carga };
 }
 
-// 📤 Enviar a Google Sheets
+// Enviar a Google Sheets
 enviarBtn.addEventListener('click', () => {
   const texto = resultado.value;
   resultado.setAttribute('readonly', true);
   editarBtn.textContent = '✏️ Editar manualmente';
 
-  if (!texto) {
-    alert('❗ No hay texto OCR para enviar');
+  const invernadero = document.getElementById('select-invernadero').value;
+  const modulo = document.getElementById('select-modulo').value;
+
+  if (!texto || !invernadero || !modulo) {
+    alert('❗ Debes capturar un texto y seleccionar invernadero y módulo');
     return;
   }
 
   const datos = extraerDatosOCR(texto);
-  const params = new URLSearchParams(datos).toString();
+  const params = new URLSearchParams({
+    ...datos,
+    invernadero,
+    modulo,
+  }).toString();
 
   enviarBtn.disabled = true;
   enviarBtn.textContent = 'Enviando...';
 
   fetch(
-    'https://script.google.com/macros/s/AKfycbxOMjxlMqsvbRxn0ueAH3dKrX7VgwhUUd-0oaW0i5P4YphjAXROvvIqkWwRz2o29Qzz/exec?' +
+    'https://script.google.com/macros/s/AKfycbwdAaj3-gRgFRbrzo1Oe3Vxo4fa4kXyr_8xzcpQNmlmHamjCmc9u_wJboWCz-W-9J4B/exec?' +
       params
   )
     .then((response) => {
@@ -225,10 +232,10 @@ enviarBtn.addEventListener('click', () => {
     });
 });
 
+// Vista previa monocromática
 const previewCanvas = document.getElementById('preview');
 const vistaPreviaBtn = document.getElementById('vista-previa');
 
-// 🎞️ Vista previa monocromática sin OCR
 vistaPreviaBtn.addEventListener('click', () => {
   const ctx = previewCanvas.getContext('2d');
   previewCanvas.width = video.videoWidth;
@@ -242,6 +249,7 @@ vistaPreviaBtn.addEventListener('click', () => {
     previewCanvas.height
   );
   mostrarPreviewDual(imageData);
+
   const data = imageData.data;
   for (let i = 0; i < data.length; i += 4) {
     const avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
@@ -256,7 +264,7 @@ vistaPreviaBtn.addEventListener('click', () => {
   }, 5000);
 });
 
-// 🎬 Mostrar imagen original y binarizada en sección aparte
+// Previews
 const canvasOriginal = document.getElementById('canvas-original');
 const canvasBin = document.getElementById('canvas-bin');
 const dualPreviewSection = document.querySelector('.preview-dual');
@@ -265,13 +273,11 @@ function mostrarPreviewDual(videoFrameData) {
   const w = video.videoWidth;
   const h = video.videoHeight;
 
-  // Original
   canvasOriginal.width = w;
   canvasOriginal.height = h;
   const ctxO = canvasOriginal.getContext('2d');
   ctxO.putImageData(videoFrameData, 0, 0);
 
-  // Binarizada
   canvasBin.width = w;
   canvasBin.height = h;
   const ctxB = canvasBin.getContext('2d');
@@ -284,30 +290,94 @@ function mostrarPreviewDual(videoFrameData) {
     data[i] = data[i + 1] = data[i + 2] = value;
   }
   ctxB.putImageData(binData, 0, 0);
-
   dualPreviewSection.style.display = 'block';
-  // 📲 Instalación manual de la app (PWA)
-  let deferredPrompt;
-  const btnInstalar = document.getElementById('btn-instalar');
-  const contenedorInstalar = document.getElementById('instalar-app');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    contenedorInstalar.style.display = 'block';
-  });
-
-  btnInstalar?.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        console.log('✅ App instalada');
-        contenedorInstalar.style.display = 'none';
-      } else {
-        console.log('❌ Instalación cancelada');
-      }
-      deferredPrompt = null;
-    }
-  });
 }
+
+// Coordenadas GPS invernaderos
+const coordenadasInvernaderos = {
+  7: { lat: 38.052052, lon: -1.054258 },
+  8: { lat: 38.051676, lon: -1.053904 },
+  9: { lat: 38.051114, lon: -1.053546 },
+  10: { lat: 38.050512, lon: -1.053046 },
+  11: { lat: 38.050154, lon: -1.052777 },
+};
+
+function distanciaEnMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const toRad = (x) => (x * Math.PI) / 180;
+  const φ1 = toRad(lat1);
+  const φ2 = toRad(lat2);
+  const Δφ = toRad(lat2 - lat1);
+  const Δλ = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
+function detectarInvernaderoPorGPS() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      let masCercano = '';
+      let minDist = Infinity;
+
+      for (const [inv, coords] of Object.entries(coordenadasInvernaderos)) {
+        const dist = distanciaEnMetros(lat, lon, coords.lat, coords.lon);
+        if (dist < minDist) {
+          minDist = dist;
+          masCercano = inv;
+        }
+      }
+
+      if (minDist <= 50) {
+        document.getElementById('select-invernadero').value = masCercano;
+        actualizarModulos();
+      }
+    },
+    (err) => console.warn('No se pudo obtener ubicación:', err),
+    { enableHighAccuracy: true, timeout: 5000 }
+  );
+}
+
+function actualizarModulos() {
+  const modulosPorInvernadero = {
+    7: 5,
+    8: 5,
+    9: 6,
+    10: 7,
+    11: 7,
+  };
+
+  const selectInver = document.getElementById('select-invernadero');
+  const selectModulo = document.getElementById('select-modulo');
+  const selected = selectInver.value;
+
+  selectModulo.innerHTML = '';
+
+  if (!modulosPorInvernadero[selected]) {
+    selectModulo.innerHTML =
+      '<option value="">Selecciona un invernadero primero</option>';
+    return;
+  }
+
+  for (let i = 1; i <= modulosPorInvernadero[selected]; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Módulo ${i}`;
+    selectModulo.appendChild(opt);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document
+    .getElementById('select-invernadero')
+    .addEventListener('change', actualizarModulos);
+  detectarInvernaderoPorGPS();
+});

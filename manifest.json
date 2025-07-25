@@ -1,6 +1,7 @@
 {
   "name": "Lectura de Lotes BabyPlant",
   "short_name": "BabyPlant OCR",
+  "description": "App interna para capturar y registrar lotes de producción agrícola.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -10,6 +11,11 @@
     {
       "src": "icono-babyplant-512.png",
       "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icono-babyplant-512.png",
+      "sizes": "192x192",
       "type": "image/png"
     }
   ]

@@ -8,7 +8,6 @@
     <link rel="icon" href="icono-babyplant-512.png" type="image/png" />
     <link rel="apple-touch-icon" href="icono-babyplant-512.png" />
     <meta name="theme-color" content="#005a3c" />
-    <link rel="manifest" href="manifest.json" />
   </head>
 
   <body>
@@ -19,6 +18,28 @@
     </header>
 
     <main>
+      <div style="margin-bottom: 20px">
+        <label for="select-invernadero">🏡 Invernadero:</label><br />
+        <select
+          id="select-invernadero"
+          style="padding: 10px; border-radius: 6px"
+        >
+          <option value="">Seleccionar...</option>
+          <option value="7">Invernadero 7</option>
+          <option value="8">Invernadero 8</option>
+          <option value="9">Invernadero 9</option>
+          <option value="10">Invernadero 10</option>
+          <option value="11">Invernadero 11</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 30px">
+        <label for="select-modulo">🔢 Módulo:</label><br />
+        <select id="select-modulo" style="padding: 10px; border-radius: 6px">
+          <option value="">Selecciona un invernadero primero</option>
+        </select>
+      </div>
+
       <p id="consejo">
         📸 Asegúrate de que la etiqueta esté enfocada y bien iluminada.<br />
         Pulsa sobre el vídeo si tu móvil lo permite para reenfocar
@@ -55,7 +76,7 @@
             margin-bottom: 20px;
           "
         ></canvas>
-        <h2>🖤 Imagen binarizada (OCR)</h2>
+        <h2>⬛ Imagen binarizada (OCR)</h2>
         <canvas
           id="canvas-bin"
           style="max-width: 100%; border: 2px solid #004d3c; border-radius: 6px"
@@ -74,11 +95,6 @@
         <button id="enviar">📤 Enviar a Google Sheets</button>
       </div>
     </main>
-    <div id="instalar-app" style="display: none; margin: 30px auto">
-      <button id="btn-instalar" style="background-color: #005a3c">
-        📲 Instalar aplicación
-      </button>
-    </div>
 
     <footer>
       App desarrollada por Juan Pedro Celdrán Danta — BabyPlant I+D · v1.0
@@ -86,13 +102,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
     <script src="script.js"></script>
-
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker
-          .register('service-worker.js')
+          .register('./service-worker.js')
           .then(() => console.log('✅ Service Worker registrado'))
-          .catch((e) => console.error('❌ Error al registrar el SW', e));
+          .catch((err) =>
+            console.error('❌ Error registrando Service Worker:', err)
+          );
       }
     </script>
   </body>
