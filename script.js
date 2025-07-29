@@ -179,6 +179,14 @@ btnProbar?.addEventListener('click', () => {
     });
 });
 
+window.addEventListener('load', () => {
+  const splash = document.getElementById('splash-screen');
+  if (splash) {
+    splash.classList.add('desaparecer');
+    setTimeout(() => splash.remove(), 1500);
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('select-invernadero').addEventListener('change', actualizarModulos);
   detectarInvernaderoPorGPS();
@@ -353,5 +361,4 @@ function extraerDatosOCR(texto) {
   if (especie && variedad && especie === variedad) especie = '';
   return { partida, lote, especie, variedad, fecha_siembra, fecha_carga };
 }
-
 
