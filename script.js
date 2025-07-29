@@ -425,6 +425,36 @@ function actualizarModulos() {
   }
 }
 
+const listaHistorial = document.getElementById('lista-historial');
+
+function mostrarHistorial() {
+  const historial = JSON.parse(localStorage.getItem('babyplant_historial')) || [];
+  listaHistorial.innerHTML = '';
+  historial.forEach(item => {
+    const li = document.createElement('li');
+    li.innerHTML = `🕒 <b>${item.fecha}</b> — 🧬 ${item.variedad} | 🌱 ${item.especie} | 🔢 ${item.lote} | 📦 ${item.partida} | 🏡 ${item.invernadero}-${item.modulo}`;
+    listaHistorial.appendChild(li);
+  });
+}
+
+function guardarEnHistorial(dato) {
+  const historial = JSON.parse(localStorage.getItem('babyplant_historial')) || [];
+  historial.unshift(dato);
+  if (historial.length > 10) historial.pop();
+  localStorage.setItem('babyplant_historial', JSON.stringify(historial));
+  mostrarHistorial();
+}
+
+// Dentro del .then de envío correcto a Sheets
+const ahora = new Date();
+const fecha = ahora.toLocaleString('es-ES');
+guardarEnHistorial({
+  fecha,
+  invernadero,
+  modulo,
+  ...datos,
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   document
     .getElementById('select-invernadero')
