@@ -162,6 +162,23 @@ function detectarInvernaderoPorGPS() {
   );
 }
 
+const btnProbar = document.getElementById('probar-conexion');
+
+btnProbar?.addEventListener('click', () => {
+  mostrarToast('⏳ Comprobando conexión...');
+  fetch('https://script.google.com/macros/s/AKfycbygR4yyd2XVwHmJCp_BrUiQPm4a3_ao0zu-WQ43PMmuoETjQYnWjVpKTP3smgex3Zjv/exec?prueba=1')
+    .then((res) => {
+      if (res.ok) {
+        mostrarToast('✅ Conexión con Sheets verificada');
+      } else {
+        mostrarToast('⚠️ Conectado, pero hubo un error', 'error');
+      }
+    })
+    .catch(() => {
+      mostrarToast('❌ Sin conexión con Google Sheets', 'error');
+    });
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('select-invernadero').addEventListener('change', actualizarModulos);
   detectarInvernaderoPorGPS();
@@ -336,8 +353,5 @@ function extraerDatosOCR(texto) {
   if (especie && variedad && especie === variedad) especie = '';
   return { partida, lote, especie, variedad, fecha_siembra, fecha_carga };
 }
-
-
-
 
 
