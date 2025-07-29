@@ -262,16 +262,16 @@ label {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: splashIn 1.4s ease-out;
+  animation: splashIn 2.5s ease-out;
 }
 
 #splash-screen img {
   width: 200px;
-  animation: zoomLogo 1.4s ease-out;
+  animation: zoomLogo 2.5s ease-out;
 }
 
 #splash-screen.desaparecer {
-  animation: splashOut 1s ease forwards;
+  animation: splashOut 1.5s ease forwards;
 }
 
 @keyframes splashIn {

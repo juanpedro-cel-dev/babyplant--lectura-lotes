@@ -183,7 +183,7 @@ window.addEventListener('load', () => {
   const splash = document.getElementById('splash-screen');
   if (splash) {
     splash.classList.add('desaparecer');
-    setTimeout(() => splash.remove(), 2000);
+    setTimeout(() => splash.remove(), 4000);
   }
 });
 
