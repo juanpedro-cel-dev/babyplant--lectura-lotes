@@ -143,7 +143,16 @@ function detectarInvernaderoPorGPS() {
           break;
         }
       }
-      if (!detectado) mostrarToast('📍 Ubicación no detectada. Selecciona manualmente.', 'error');
+      if (!detectado) {
+  mostrarToast('📍 Ubicación no detectada. Selecciona manualmente.', 'error');
+  const select = document.getElementById('select-invernadero');
+  const valor = select.value;
+  select.value = "";
+  setTimeout(() => {
+    select.value = valor;
+    actualizarModulos();
+  }, 50);
+}
     },
     (err) => {
       console.warn('No se pudo obtener ubicación:', err);
@@ -327,6 +336,7 @@ function extraerDatosOCR(texto) {
   if (especie && variedad && especie === variedad) especie = '';
   return { partida, lote, especie, variedad, fecha_siembra, fecha_carga };
 }
+
 
 
 
