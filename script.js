@@ -311,57 +311,90 @@ function mostrarPreviewDual(videoFrameData) {
 }
 
 // Coordenadas GPS invernaderos
-const coordenadasInvernaderos = {
-  7: { lat: 38.052052, lon: -1.054258 },
-  8: { lat: 38.051676, lon: -1.053904 },
-  9: { lat: 38.051114, lon: -1.053546 },
-  10: { lat: 38.050512, lon: -1.053046 },
-  11: { lat: 38.050154, lon: -1.052777 },
+const invernaderos = {
+  7: {
+    nombre: "Invernadero 7",
+    poligono: turf.polygon([[
+      [-1.054376, 38.051755],
+      [-1.053861, 38.052049],
+      [-1.054656, 38.052064],
+      [-1.054140, 38.052350],
+      [-1.054376, 38.051755]
+    ]])
+  },
+  8: {
+    nombre: "Invernadero 8",
+    poligono: turf.polygon([[
+      [-1.053931, 38.051257],
+      [-1.053498, 38.051497],
+      [-1.054376, 38.051755],
+      [-1.053861, 38.052049],
+      [-1.053931, 38.051257]
+    ]])
+  },
+  9: {
+    nombre: "Invernadero 9",
+    poligono: turf.polygon([[
+      [-1.053553, 38.050713],
+      [-1.053069, 38.050384],
+      [-1.054003, 38.051213],
+      [-1.053498, 38.051497],
+      [-1.053553, 38.050713]
+    ]])
+  },
+  10: {
+    nombre: "Invernadero 10",
+    poligono: turf.polygon([[
+      [-1.052426, 38.050114],
+      [-1.052608, 38.050114],
+      [-1.053470, 38.050495],
+      [-1.053397, 38.050535],
+      [-1.053553, 38.050713],
+      [-1.053113, 38.050959],
+      [-1.052426, 38.050114]
+    ]])
+  },
+  11: {
+    nombre: "Invernadero 11",
+    poligono: turf.polygon([[
+      [-1.052411, 38.050179],
+      [-1.052426, 38.049895],
+      [-1.053123, 38.050114],
+      [-1.052608, 38.050114],
+      [-1.052411, 38.050179]
+    ]])
+  }
 };
-
-function distanciaEnMetros(lat1, lon1, lat2, lon2) {
-  const R = 6371e3;
-  const toRad = (x) => (x * Math.PI) / 180;
-  const φ1 = toRad(lat1);
-  const φ2 = toRad(lat2);
-  const Δφ = toRad(lat2 - lat1);
-  const Δλ = toRad(lon2 - lon1);
-
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
-}
 
 function detectarInvernaderoPorGPS() {
   if (!navigator.geolocation) return;
+
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
+      const lat = pos.coords.latitude;
+      const punto = turf.point([lon, lat]);
 
-      let masCercano = '';
-      let minDist = Infinity;
+      let detectado = false;
 
-      for (const [inv, coords] of Object.entries(coordenadasInvernaderos)) {
-        const dist = distanciaEnMetros(lat, lon, coords.lat, coords.lon);
-        if (dist < minDist) {
-          minDist = dist;
-          masCercano = inv;
+      for (const [id, { poligono }] of Object.entries(invernaderos)) {
+        if (turf.booleanPointInPolygon(punto, poligono)) {
+          document.getElementById('select-invernadero').value = id;
+          actualizarModulos();
+          detectado = true;
+          break;
         }
       }
 
-      if (minDist <= 50) {
-        document.getElementById('select-invernadero').value = masCercano;
-        actualizarModulos();
+      if (!detectado) {
+        console.warn('📍 No se detectó ningún invernadero para tu ubicación');
       }
     },
     (err) => console.warn('No se pudo obtener ubicación:', err),
     { enableHighAccuracy: true, timeout: 5000 }
   );
 }
+
 
 function actualizarModulos() {
   const modulosPorInvernadero = {
