@@ -1,4 +1,4 @@
-// script.js
+// script.js COMPLETO Y ACTUALIZADO
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -41,7 +41,6 @@ navigator.mediaDevices
       });
   });
 
-// Función toast
 function mostrarToast(mensaje, tipo = 'ok') {
   const toast = document.getElementById('toast');
   toast.textContent = mensaje;
@@ -54,7 +53,6 @@ function mostrarToast(mensaje, tipo = 'ok') {
   }, 3000);
 }
 
-// Capturar imagen y hacer OCR
 capturarBtn.addEventListener('click', () => {
   const ctx = canvas.getContext('2d');
   canvas.width = video.videoWidth;
@@ -89,7 +87,6 @@ capturarBtn.addEventListener('click', () => {
     });
 });
 
-// Edición manual
 editarBtn.addEventListener('click', () => {
   if (resultado.hasAttribute('readonly')) {
     resultado.removeAttribute('readonly');
@@ -101,106 +98,77 @@ editarBtn.addEventListener('click', () => {
   }
 });
 
-// Extraer datos OCR
 function extraerDatosOCR(texto) {
-  const limpiar = (str) =>
-    str
-      .toUpperCase()
-      .replace(/[^A-Z0-9ÁÉÍÓÚÜÑ\s\-\/]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
+  const limpiar = (str) => str.toUpperCase().replace(/[^A-Z0-9ÁÉÍÓÚÜÑ\s\-\/]/g, '').replace(/\s+/g, ' ').trim();
   const lineas = texto.split(/\r?\n/).map(limpiar).filter(Boolean);
-  const especies = [
-    'LECHUGA',
-    'AROMATICAS Y HOJAS',
-    'ACELGA',
-    'ESPINACA',
-    'CANONIGO',
-    'RUCULA',
-    'MOSTAZA',
-    'BORRAJA',
-    'ESCAROLA',
-    'ENDIVIA',
-    'TATSOI',
-    'PAK CHOI',
-  ];
+  const especies = ['LECHUGA','AROMATICAS Y HOJAS','ACELGA','ESPINACA','CANONIGO','RUCULA','MOSTAZA','BORRAJA','ESCAROLA','ENDIVIA','TATSOI','PAK CHOI'];
 
-  let partida = '',
-    lote = '',
-    especie = '',
-    variedad = '',
-    fechas = [];
+  let partida = '', lote = '', especie = '', variedad = '', fechas = [];
 
   for (const l of lineas) {
     const match = l.match(/\b\d{7}\b/);
-    if (match) {
-      partida = match[0];
-      break;
-    }
+    if (match) { partida = match[0]; break; }
   }
 
   for (const l of lineas) {
     const match = l.match(/\b[A-Z0-9\-]{6,}\b/);
-    if (match && match[0] !== partida) {
-      lote = match[0];
-      break;
-    }
+    if (match && match[0] !== partida) { lote = match[0]; break; }
   }
 
   for (const l of lineas) {
-    const match = [
-      ...l.matchAll(/\b\d{2}[-\/]?\d{2}\b/g),
-      ...l.matchAll(/\b\d{4}\b/g),
-    ];
+    const match = [...l.matchAll(/\b\d{2}[-\/]?\d{2}\b/g), ...l.matchAll(/\b\d{4}\b/g)];
     for (const m of match) {
       const raw = m[0].replace('/', '-');
-      const normal =
-        raw.length === 4 ? raw.slice(0, 2) + '-' + raw.slice(2) : raw;
+      const normal = raw.length === 4 ? raw.slice(0, 2) + '-' + raw.slice(2) : raw;
       fechas.push(normal);
     }
   }
 
-  fechas = fechas
-    .filter((f) => /^\d{2}-\d{2}$/.test(f))
-    .filter((f, i, arr) => arr.indexOf(f) === i)
-    .sort((a, b) => {
-      const [d1, m1] = a.split('-').map(Number);
-      const [d2, m2] = b.split('-').map(Number);
-      return m1 !== m2 ? m1 - m2 : d1 - d2;
-    });
+  fechas = fechas.filter((f) => /^\d{2}-\d{2}$/.test(f)).filter((f, i, arr) => arr.indexOf(f) === i).sort((a, b) => {
+    const [d1, m1] = a.split('-').map(Number);
+    const [d2, m2] = b.split('-').map(Number);
+    return m1 !== m2 ? m1 - m2 : d1 - d2;
+  });
 
   const fecha_siembra = fechas[0] || '';
   const fecha_carga = fechas[1] || '';
-
   especie = especies.find((e) => lineas.some((l) => l.includes(e))) || '';
 
-  const claveVariedad =
-    /(COGOLLO|ROMANA|ALBAHACA|VERDE|ROJA|LOLLI|ESCAROLA|ENDIVIA|A\d+)/;
+  const claveVariedad = /(COGOLLO|ROMANA|ALBAHACA|VERDE|ROJA|LOLLI|ESCAROLA|ENDIVIA|A\d+)/;
   const idxVariedad = lineas.findIndex((l) => claveVariedad.test(l));
   if (idxVariedad >= 0) {
     variedad = lineas[idxVariedad].replace(/\b\d{1,4}\b/g, '').trim();
     if (!especie && idxVariedad > 0) {
       const candidata = lineas[idxVariedad - 1];
-      if (
-        candidata !== partida &&
-        candidata !== lote &&
-        !candidata.includes(partida) &&
-        !candidata.includes(lote) &&
-        !/\b\d{2}[-\/]?\d{2}\b/.test(candidata) &&
-        !/\b\d{4,}\b/.test(candidata)
-      ) {
+      if (candidata !== partida && candidata !== lote && !candidata.includes(partida) && !candidata.includes(lote) && !/\b\d{2}[-\/]?\d{2}\b/.test(candidata) && !/\b\d{4,}\b/.test(candidata)) {
         especie = candidata;
       }
     }
   }
-
   if (especie && variedad && especie === variedad) especie = '';
-
   return { partida, lote, especie, variedad, fecha_siembra, fecha_carga };
 }
 
-// Enviar a Google Sheets
+function guardarEnHistorial(dato) {
+  const historial = JSON.parse(localStorage.getItem('babyplant_historial')) || [];
+  historial.unshift(dato);
+  if (historial.length > 10) historial.pop();
+  localStorage.setItem('babyplant_historial', JSON.stringify(historial));
+  mostrarHistorial();
+}
+
+function mostrarHistorial() {
+  const lista = document.getElementById('lista-historial');
+  if (!lista) return;
+  const historial = JSON.parse(localStorage.getItem('babyplant_historial')) || [];
+  lista.innerHTML = '';
+  historial.forEach(item => {
+    const li = document.createElement('li');
+    li.innerHTML = `🕒 <b>${item.fecha}</b> — 🧬 ${item.variedad} | 🌱 ${item.especie} | 🔢 ${item.lote} | 📦 ${item.partida} | 🏡 ${item.invernadero}-${item.modulo}`;
+    lista.appendChild(li);
+  });
+}
+
 enviarBtn.addEventListener('click', () => {
   const texto = resultado.value;
   resultado.setAttribute('readonly', true);
@@ -210,32 +178,25 @@ enviarBtn.addEventListener('click', () => {
   const modulo = document.getElementById('select-modulo').value;
 
   if (!texto || !invernadero || !modulo) {
-    mostrarToast(
-      '❗ Debes capturar un texto y seleccionar invernadero y módulo',
-      'error'
-    );
+    mostrarToast('❗ Debes capturar un texto y seleccionar invernadero y módulo', 'error');
     return;
   }
 
   const datos = extraerDatosOCR(texto);
-  const params = new URLSearchParams({
-    ...datos,
-    invernadero,
-    modulo,
-  }).toString();
+  const params = new URLSearchParams({ ...datos, invernadero, modulo }).toString();
 
   enviarBtn.disabled = true;
   enviarBtn.textContent = 'Enviando...';
 
-  fetch(
-    'https://script.google.com/macros/s/AKfycbygR4yyd2XVwHmJCp_BrUiQPm4a3_ao0zu-WQ43PMmuoETjQYnWjVpKTP3smgex3Zjv/exec?' +
-      params
-  )
+  fetch('https://script.google.com/macros/s/AKfycbygR4yyd2XVwHmJCp_BrUiQPm4a3_ao0zu-WQ43PMmuoETjQYnWjVpKTP3smgex3Zjv/exec?' + params)
     .then((response) => {
       enviarBtn.disabled = false;
       enviarBtn.textContent = 'Enviar';
       if (response.ok) {
         mostrarToast('✅ Datos enviados correctamente');
+        const ahora = new Date();
+        const fecha = ahora.toLocaleString('es-ES');
+        guardarEnHistorial({ fecha, invernadero, modulo, ...datos });
         resultado.value = '';
       } else {
         mostrarToast('❌ Error al enviar los datos', 'error');
@@ -249,123 +210,7 @@ enviarBtn.addEventListener('click', () => {
     });
 });
 
-// Vista previa monocromática
-const previewCanvas = document.getElementById('preview');
-const vistaPreviaBtn = document.getElementById('vista-previa');
-
-vistaPreviaBtn.addEventListener('click', () => {
-  const ctx = previewCanvas.getContext('2d');
-  previewCanvas.width = video.videoWidth;
-  previewCanvas.height = video.videoHeight;
-  ctx.drawImage(video, 0, 0, previewCanvas.width, previewCanvas.height);
-
-  const imageData = ctx.getImageData(
-    0,
-    0,
-    previewCanvas.width,
-    previewCanvas.height
-  );
-  mostrarPreviewDual(imageData);
-
-  const data = imageData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-    const value = avg > 160 ? 255 : 0;
-    data[i] = data[i + 1] = data[i + 2] = value;
-  }
-  ctx.putImageData(imageData, 0, 0);
-  previewCanvas.style.display = 'block';
-
-  setTimeout(() => {
-    previewCanvas.style.display = 'none';
-  }, 5000);
-});
-
-// Previews
-const canvasOriginal = document.getElementById('canvas-original');
-const canvasBin = document.getElementById('canvas-bin');
-const dualPreviewSection = document.querySelector('.preview-dual');
-
-function mostrarPreviewDual(videoFrameData) {
-  const w = video.videoWidth;
-  const h = video.videoHeight;
-
-  canvasOriginal.width = w;
-  canvasOriginal.height = h;
-  const ctxO = canvasOriginal.getContext('2d');
-  ctxO.putImageData(videoFrameData, 0, 0);
-
-  canvasBin.width = w;
-  canvasBin.height = h;
-  const ctxB = canvasBin.getContext('2d');
-  const binData = ctxB.createImageData(w, h);
-  binData.data.set(new Uint8ClampedArray(videoFrameData.data));
-  const data = binData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const avg = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-    const value = avg > 160 ? 255 : 0;
-    data[i] = data[i + 1] = data[i + 2] = value;
-  }
-  ctxB.putImageData(binData, 0, 0);
-  dualPreviewSection.style.display = 'block';
-}
-
-// Coordenadas GPS invernaderos
-const invernaderos = {
-  7: {
-    nombre: "Invernadero 7",
-    poligono: turf.polygon([[
-      [-1.054376, 38.051755],
-      [-1.053861, 38.052049],
-      [-1.054656, 38.052064],
-      [-1.054140, 38.052350],
-      [-1.054376, 38.051755]
-    ]])
-  },
-  8: {
-    nombre: "Invernadero 8",
-    poligono: turf.polygon([[
-      [-1.053931, 38.051257],
-      [-1.053498, 38.051497],
-      [-1.054376, 38.051755],
-      [-1.053861, 38.052049],
-      [-1.053931, 38.051257]
-    ]])
-  },
-  9: {
-    nombre: "Invernadero 9",
-    poligono: turf.polygon([[
-      [-1.053553, 38.050713],
-      [-1.053069, 38.050384],
-      [-1.054003, 38.051213],
-      [-1.053498, 38.051497],
-      [-1.053553, 38.050713]
-    ]])
-  },
-  10: {
-    nombre: "Invernadero 10",
-    poligono: turf.polygon([[
-      [-1.052426, 38.050114],
-      [-1.052608, 38.050114],
-      [-1.053470, 38.050495],
-      [-1.053397, 38.050535],
-      [-1.053553, 38.050713],
-      [-1.053113, 38.050959],
-      [-1.052426, 38.050114]
-    ]])
-  },
-  11: {
-    nombre: "Invernadero 11",
-    poligono: turf.polygon([[
-      [-1.052411, 38.050179],
-      [-1.052426, 38.049895],
-      [-1.053123, 38.050114],
-      [-1.052608, 38.050114],
-      [-1.052411, 38.050179]
-    ]])
-  }
-};
-
+// GPS + Módulo
 function detectarInvernaderoPorGPS() {
   if (!navigator.geolocation) return;
 
@@ -387,77 +232,19 @@ function detectarInvernaderoPorGPS() {
       }
 
       if (!detectado) {
-        console.warn('📍 No se detectó ningún invernadero para tu ubicación');
+        mostrarToast('📍 Ubicación no detectada. Selecciona manualmente.', 'error');
       }
     },
-    (err) => console.warn('No se pudo obtener ubicación:', err),
+    (err) => {
+      console.warn('No se pudo obtener ubicación:', err);
+      mostrarToast('📍 Ubicación no detectada. Selecciona manualmente.', 'error');
+    },
     { enableHighAccuracy: true, timeout: 5000 }
   );
 }
 
-
-function actualizarModulos() {
-  const modulosPorInvernadero = {
-    7: 5,
-    8: 5,
-    9: 6,
-    10: 7,
-    11: 7,
-  };
-
-  const selectInver = document.getElementById('select-invernadero');
-  const selectModulo = document.getElementById('select-modulo');
-  const selected = selectInver.value;
-
-  selectModulo.innerHTML = '';
-
-  if (!modulosPorInvernadero[selected]) {
-    selectModulo.innerHTML =
-      '<option value="">Selecciona un invernadero primero</option>';
-    return;
-  }
-
-  for (let i = 1; i <= modulosPorInvernadero[selected]; i++) {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = `Módulo ${i}`;
-    selectModulo.appendChild(opt);
-  }
-}
-
-const listaHistorial = document.getElementById('lista-historial');
-
-function mostrarHistorial() {
-  const historial = JSON.parse(localStorage.getItem('babyplant_historial')) || [];
-  listaHistorial.innerHTML = '';
-  historial.forEach(item => {
-    const li = document.createElement('li');
-    li.innerHTML = `🕒 <b>${item.fecha}</b> — 🧬 ${item.variedad} | 🌱 ${item.especie} | 🔢 ${item.lote} | 📦 ${item.partida} | 🏡 ${item.invernadero}-${item.modulo}`;
-    listaHistorial.appendChild(li);
-  });
-}
-
-function guardarEnHistorial(dato) {
-  const historial = JSON.parse(localStorage.getItem('babyplant_historial')) || [];
-  historial.unshift(dato);
-  if (historial.length > 10) historial.pop();
-  localStorage.setItem('babyplant_historial', JSON.stringify(historial));
-  mostrarHistorial();
-}
-
-// Dentro del .then de envío correcto a Sheets
-const ahora = new Date();
-const fecha = ahora.toLocaleString('es-ES');
-guardarEnHistorial({
-  fecha,
-  invernadero,
-  modulo,
-  ...datos,
-});
-
 document.addEventListener('DOMContentLoaded', () => {
-  document
-    .getElementById('select-invernadero')
-    .addEventListener('change', actualizarModulos);
+  document.getElementById('select-invernadero').addEventListener('change', actualizarModulos);
   detectarInvernaderoPorGPS();
+  mostrarHistorial();
 });
